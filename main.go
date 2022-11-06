@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -44,18 +45,18 @@ func (r *RingBuffer) Init() (chan int, <-chan interface{}) {
 		for scanner.Scan() {
 			text = scanner.Text()
 			if strings.EqualFold(text, "exit") {
-				fmt.Println("Программа завершила работу!")
-				return
+				log.Fatal("======\nЗавершение работы\n======")
 			}
 			i, err := strconv.Atoi(text)
 			if err != nil {
-				fmt.Println("Программа обрабатывает только целые числа!")
+				log.Println("*****Программа обрабатывает только целые числа!*****")
 				continue
 			}
 			if err != nil {
 				fmt.Println(err.Error())
 			}
 			output <- i
+			log.Printf("Число %d принято в работу", i)
 		}
 
 	}()
@@ -67,11 +68,12 @@ func (r *RingBuffer) Push(i int) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if r.isFull {
-		fmt.Println("Буффер полон")
+		log.Println("Буффер полон")
 		return
 	}
 	r.buf[r.w] = i
 	r.w++
+	log.Printf("Число %d добавлено в буфер", i)
 	if r.w >= r.size {
 		r.isFull = true
 	}
@@ -93,7 +95,7 @@ func (r *RingBuffer) Get(output chan int) {
 // Consumer
 func Printer(done <-chan interface{}, c <-chan int) {
 	for data := range c {
-		fmt.Println("Числа прошедшие фильтрацию: ", data)
+		log.Println("Числа прошедшие фильтрацию: ", data)
 	}
 }
 
